@@ -25,7 +25,7 @@ const Login = () => {
   const [terminalOutput, setTerminalOutput] = useState([])
   const [accessAttempts, setAccessAttempts] = useState(0)
   
-  const { login } = useAuth()
+  const { login, demoLogin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -61,7 +61,17 @@ const Login = () => {
     addTerminalLine(`Access attempt #${accessAttempts + 1} initiated...`, 'system')
     addTerminalLine('Verifying user credentials...', 'system')
 
-    const result = await login(formData.email, formData.password)
+    // Demo-only login (no backend required)
+    // Admin: admin@hackathon.com / demo-admin
+    // User:  user@hackathon.com  / demo-user
+    const isDemoAdmin =
+      formData.email === 'admin@hackathon.com' && formData.password === 'demo-admin'
+    const isDemoUser =
+      formData.email === 'user@hackathon.com' && formData.password === 'demo-user'
+
+    const result = (isDemoAdmin || isDemoUser)
+      ? await demoLogin({ email: formData.email, password: formData.password })
+      : await login(formData.email, formData.password)
     
     if (result.success) {
       addTerminalLine('Credentials verified successfully!', 'success')
@@ -238,17 +248,33 @@ const Login = () => {
           <div className="bg-black border border-yellow-500 rounded-lg p-6 text-center">
             <div className="flex items-center justify-center space-x-2 text-yellow-400 mb-3">
               <Key className="w-4 h-4" />
-              <h3 className="text-sm font-bold">TEST_CREDENTIALS</h3>
+              <h3 className="text-sm font-bold">DEMO MODE (FRONTEND-ONLY)</h3>
             </div>
-            <div className="space-y-2 text-xs">
-              <div className="text-green-400 font-mono">
-                <span className="text-gray-500">ACCESS_ID:</span> admin@cyber-arena.io
+            <div className="space-y-4 text-xs">
+              <div>
+                <div className="text-yellow-300 font-mono mb-2">ADMIN</div>
+                <div className="text-green-400 font-mono">
+                  <span className="text-gray-500">ACCESS_ID:</span> admin@hackathon.com
+                </div>
+                <div className="text-green-400 font-mono">
+                  <span className="text-gray-500">ENCRYPTION_KEY:</span> demo-admin
+                </div>
+                <div className="text-cyan-400 text-xs mt-1">
+                  [PRIVILEGE_LEVEL: admin]
+                </div>
               </div>
-              <div className="text-green-400 font-mono">
-                <span className="text-gray-500">ENCRYPTION_KEY:</span> Admin123!
-              </div>
-              <div className="text-cyan-400 text-xs mt-2">
-                [PRIVILEGE_LEVEL: ROOT_ACCESS]
+
+              <div>
+                <div className="text-yellow-300 font-mono mb-2">USER</div>
+                <div className="text-green-400 font-mono">
+                  <span className="text-gray-500">ACCESS_ID:</span> user@hackathon.com
+                </div>
+                <div className="text-green-400 font-mono">
+                  <span className="text-gray-500">ENCRYPTION_KEY:</span> demo-user
+                </div>
+                <div className="text-cyan-400 text-xs mt-1">
+                  [PRIVILEGE_LEVEL: user]
+                </div>
               </div>
             </div>
           </div>

@@ -130,7 +130,7 @@ const AchievementItem = ({ achievement }) => {
 
 const UserDashboard = () => {
   // Use mock context hook
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
   const [stats, setStats] = useState(null);
   const [recentChallenges, setRecentChallenges] = useState([]);
   const [userAchievements, setUserAchievements] = useState([]);
@@ -141,6 +141,61 @@ const UserDashboard = () => {
     try {
       setLoading(true);
       setError(null);
+
+      // Frontend-only demo mode (no backend deployment required)
+      if (isDemo) {
+        const demoStats = {
+          totalPoints: 1240,
+          solvedChallenges: 7,
+          rank: 128,
+          achievements: 5
+        };
+
+        const demoChallenges = [
+          {
+            _id: 'demo-c1',
+            id: 'demo-c1',
+            title: 'Intro to Buffer Overflow',
+            category: 'Pwn',
+            difficulty: 'easy',
+            points: 100,
+            status: 'solved',
+            solvedAt: new Date(Date.now() - 1000 * 60 * 80).toISOString()
+          },
+          {
+            _id: 'demo-c2',
+            id: 'demo-c2',
+            title: 'SQL Injection in Auth Bypass',
+            category: 'Web',
+            difficulty: 'medium',
+            points: 250,
+            status: 'attempted',
+            solvedAt: null
+          },
+          {
+            _id: 'demo-c3',
+            id: 'demo-c3',
+            title: 'Docker Escape: Quick Start',
+            category: 'CTF',
+            difficulty: 'hard',
+            points: 400,
+            status: 'solved',
+            solvedAt: new Date(Date.now() - 1000 * 60 * 220).toISOString()
+          }
+        ];
+
+        const demoAchievements = [
+          { _id: 'a1', icon: '🎖️', name: 'First Blood', description: 'Solve your first challenge.', points: 120, earnedAt: new Date(Date.now() - 1000*60*300).toISOString() },
+          { _id: 'a2', icon: '🧠', name: 'Logic Breaker', description: 'Solve 3 challenges.', points: 300, earnedAt: new Date(Date.now() - 1000*60*520).toISOString() },
+        ];
+
+        // Match existing UI slicing behavior
+        setStats(demoStats);
+        setRecentChallenges(demoChallenges.slice(0, 5));
+        setUserAchievements(demoAchievements.slice(0, 3));
+        setLoading(false);
+        return;
+      }
 
       // Using the real services
       const [statsData, challengesData, achievementsData] = await Promise.all([
@@ -160,7 +215,7 @@ const UserDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isDemo]);
 
   useEffect(() => {
     // Initial data fetch

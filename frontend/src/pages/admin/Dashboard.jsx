@@ -4,7 +4,7 @@ import { adminService } from '../../services/adminService';
 import { analyticsService } from '../../services/analyticsService';
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
@@ -22,9 +22,62 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDemo]);
 
   const loadDashboardData = async () => {
+    // Frontend-only demo mode (no backend deployment required)
+    if (isDemo) {
+      setIsLoading(true);
+      setError(null);
+
+      const demoStats = {
+        totalUsers: 42,
+        activeUsers: 12,
+        totalChallenges: 18,
+        activeChallenges: 6,
+        totalSubmissions: 530,
+        todaySubmissions: 38,
+        totalTeams: 9,
+        systemStatus: 'operational'
+      };
+
+      const demoRecentActivity = [
+        {
+          _id: 'demo-1',
+          user: { username: 'admin' },
+          action: 'solved a challenge',
+          challenge: 'Web Exploit Basics',
+          timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
+          category: 'Web'
+        },
+        {
+          _id: 'demo-2',
+          user: { username: 'user' },
+          action: 'registered for event',
+          challenge: 'Docker Challenge',
+          timestamp: new Date(Date.now() - 1000 * 60 * 41).toISOString(),
+          category: 'CTF'
+        }
+      ];
+
+      const demoHealth = {
+        api: { status: 'operational', message: 'API responding normally' },
+        database: { status: 'operational', message: 'MongoDB connected' },
+        websocket: { status: 'operational', message: 'Real-time channel healthy' },
+        auth: { status: 'operational', message: 'JWT auth ready' }
+      };
+
+      setTimeout(() => {
+        setStats(demoStats);
+        setRecentActivity(demoRecentActivity);
+        setSystemHealth(demoHealth);
+        setIsLoading(false);
+      }, 300);
+
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);

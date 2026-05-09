@@ -57,6 +57,31 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  // Frontend-only demo login (no backend call required)
+  const demoLogin = async ({ email, password }) => {
+    const DEMO_ADMIN = { email: 'admin@hackathon.com', password: 'demo-admin' }
+    const DEMO_USER = { email: 'user@hackathon.com', password: 'demo-user' }
+
+    const isAdmin = email === DEMO_ADMIN.email && password === DEMO_ADMIN.password
+    const isUser = email === DEMO_USER.email && password === DEMO_USER.password
+
+    if (!isAdmin && !isUser) {
+      return { success: false, error: 'Demo credentials not recognized' }
+    }
+
+    const userData = isAdmin
+      ? { id: 'demo-admin', username: 'admin', email: DEMO_ADMIN.email, role: 'admin', score: 0 }
+      : { id: 'demo-user', username: 'user', email: DEMO_USER.email, role: 'user', score: 0 }
+
+    const demoToken = 'demo-token'
+    localStorage.setItem('token', demoToken)
+    localStorage.setItem('userData', JSON.stringify(userData))
+    axios.defaults.headers.common['Authorization'] = `Bearer ${demoToken}`
+    setUser(userData)
+
+    return { success: true, user: userData }
+  }
+
   const register = async (userData) => {
     try {
       const response = await axios.post('/auth/register', userData)
@@ -88,14 +113,18 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('userData', JSON.stringify(updatedUserData))
   }
 
+  const isDemo = localStorage.getItem('token') === 'demo-token'
+
   const value = {
     user,
     login,
+    demoLogin,
     register,
     logout,
     updateUser,
     loading,
-    isAdmin: user?.role === 'admin'
+    isAdmin: user?.role === 'admin',
+    isDemo
   }
 
   return (
